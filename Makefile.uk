@@ -1,0 +1,537 @@
+# SPDX-License-Identifier: BSD-3-Clause
+#
+# php Unikraft library
+#
+# Authors: Your Name <your@email.com>
+#
+# Copyright (c) 2021, Your Name <your@email.com>. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. Neither the name of the copyright holder nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+################################################################################
+# Library registration
+################################################################################
+$(eval $(call addlib_s,libphp,$(CONFIG_LIBPHP)))
+
+################################################################################
+# Sources
+################################################################################]
+LIBPHP_VERSION = php-8.1.0RC1
+LIBPHP_URL = https://github.com/php/php-src/archive/$(LIBPHP_VERSION).zip
+LIBPHP_SUBDIR = php-src-$(LIBPHP_VERSION)
+LIBPHP_PATCHDIR = $(LIBPHP_BASE)/patches
+$(eval $(call patch,libphp,$(LIBPHP_PATCHDIR),$(LIBPHP_SUBDIR)))
+$(eval $(call fetch,libphp,$(LIBPHP_URL)))
+
+################################################################################
+# Helpers
+################################################################################
+LIBPHP_SRC = $(LIBPHP_ORIGIN)/$(LIBPHP_SUBDIR)
+
+################################################################################
+# Library includes
+################################################################################
+CINCLUDES-y += -I$(LIBPHP_BASE)/include
+CINCLUDES-y += -I$(LIBPHP_BASE)/include/Zend
+
+CINCLUDES-y += -I$(LIBPHP_SRC)
+CINCLUDES-y += -I$(LIBPHP_SRC)/include
+
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/ctype
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/date
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/date/lib
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/dom
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/fileinfo
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/fileinfo/libmagic
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/filter
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/hash
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/hash/sha3/generic64lc
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/hash/xxhash
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/iconv
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/json
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/libxml
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/opcache
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/pcre
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/pcre/pcre2lib
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/pdo_sqlite
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/pdo
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/phar
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/posix
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/reflection
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/session
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/simplexml
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/spl
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/sqlite3
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/standard
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/tokenizer
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/xml
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/xmlreader
+CINCLUDES-y += -I$(LIBPHP_SRC)/ext/xmlwriter
+
+CINCLUDES-y += -I$(LIBPHP_SRC)/main
+CINCLUDES-y += -I$(LIBPHP_SRC)/main/streams
+CINCLUDES-y += -I$(LIBPHP_SRC)/sapi/cgi
+CINCLUDES-y += -I$(LIBPHP_SRC)/sapi/cli
+CINCLUDES-y += -I$(LIBPHP_SRC)/sapi/phpdbg
+CINCLUDES-y += -I$(LIBPHP_SRC)/TSRM
+CINCLUDES-y += -I$(LIBPHP_SRC)/Zend
+CINCLUDES-y += -I$(LIBPHP_SRC)/Zend/asm
+
+################################################################################
+# Flags
+################################################################################
+LIBPHP_FLAGS += -DZEND_SIGNALS
+LIBPHP_FLAGS += -DZEND_ENABLE_STATIC_TSRMLS_CACHE
+# LIBPHP_FLAGS += -DPIC
+LIBPHP_FLAGS += -DHAVE_TIMELIB_CONFIG_H
+# LIBPHP_FLAGS += -DHAVE_CONFIG_H
+LIBPHP_FLAGS += -DKeccakP200_excluded
+LIBPHP_FLAGS += -DKeccakP400_excluded
+LIBPHP_FLAGS += -DKeccakP800_excluded
+# LIBPHP_FLAGS += -D_GNU_SOURCE
+LIBPHP_FLAGS += -U__SSE2__
+LIBPHP_FLAGS += -std=c99
+
+# Suppress some warnings to make the build process look neater
+LIBPHP_FLAGS_SUPPRESS += -Wno-clobbered
+LIBPHP_FLAGS_SUPPRESS += -Wno-strict-aliasing
+LIBPHP_FLAGS_SUPPRESS += -Wno-unused-parameter
+LIBPHP_FLAGS_SUPPRESS += -Wno-sign-compare
+LIBPHP_FLAGS_SUPPRESS += -Wno-implicit-fallthrough
+
+LIBPHP_CFLAGS-y += $(LIBPHP_FLAGS)
+LIBPHP_CFLAGS-y += $(LIBPHP_FLAGS_SUPPRESS)
+
+################################################################################
+# Glue code
+################################################################################
+# Include paths
+# LIBPHP_CINCLUDES-y   += $(LIBPHP_COMMON_INCLUDES-y)
+# LIBPHP_CXXINCLUDES-y += $(LIBPHP_COMMON_INCLUDES-y)
+LIBPHP_SRCS-$(CONFIG_LIBPHP_MAIN_FUNCTION) += $(LIBPHP_BASE)/main.c|unikraft
+
+################################################################################
+# Library sources
+################################################################################
+# LIBPHP_SRCS-y += $(LIBPHP_SRC)
+# LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/ctype/ctype.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/ctype/ctype.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/date/lib/astro.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/date/lib/dow.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/date/lib/interval.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/date/lib/parse_date.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/date/lib/parse_iso_intervals.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/date/lib/parse_posix.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/date/lib/parse_tz.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/date/lib/timelib.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/date/lib/tm2unixtime.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/date/lib/unixtime2tm.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/date/php_date.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/attr.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/cdatasection.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/characterdata.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/comment.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/document.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/documentfragment.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/documenttype.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/dom_iterators.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/domexception.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/domimplementation.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/element.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/entity.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/entityreference.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/namednodemap.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/node.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/nodelist.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/notation.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/parentnode.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/php_dom.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/processinginstruction.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/text.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/dom/xpath.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/fileinfo.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/apprentice.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/apptype.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/ascmagic.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/buffer.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/cdf_time.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/cdf.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/compress.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/der.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/encoding.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/fsmagic.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/funcs.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/is_csv.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/is_json.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/is_tar.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/magic.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/print.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/readcdf.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/fileinfo/libmagic/softmagic.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/filter/callback_filter.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/filter/filter.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/filter/logical_filters.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/filter/sanitizing_filters.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/hash_adler32.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/hash_crc32.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/hash_fnv.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/hash_gost.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/hash_haval.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/hash_joaat.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/hash_md.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/hash_murmur.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/hash_ripemd.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/hash_sha.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/hash_sha3.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/hash_snefru.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/hash_tiger.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/hash_whirlpool.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/hash_xxhash.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/hash.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/murmur/PMurHash.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/murmur/PMurHash128.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/sha3/generic64lc/KeccakHash.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/sha3/generic64lc/KeccakP-1600-opt64.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/hash/sha3/generic64lc/KeccakSponge.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/iconv/iconv.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/json/json_encoder.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/json/json_parser.tab.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/json/json_scanner.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/json/json.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/libxml/libxml.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/opcache/jit/zend_jit_gdb.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/opcache/jit/zend_jit_vm_helpers.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/opcache/jit/zend_jit.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/opcache/shared_alloc_mmap.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/opcache/shared_alloc_posix.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/opcache/shared_alloc_shm.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/opcache/zend_accelerator_blacklist.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/opcache/zend_accelerator_debug.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/opcache/zend_accelerator_hash.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/opcache/zend_accelerator_module.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/opcache/zend_accelerator_util_funcs.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/opcache/zend_file_cache.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/opcache/zend_persist_calc.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/opcache/zend_persist.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/opcache/zend_shared_alloc.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/opcache/ZendAccelerator.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_auto_possess.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_chartables.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_compile.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_config.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_context.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_convert.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_dfa_match.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_error.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_extuni.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_find_bracket.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_jit_compile.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_maketables.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_match_data.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_match.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_newline.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_ord2utf.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_pattern_info.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_script_run.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_serialize.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_string_utils.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_study.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_substitute.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_substring.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_tables.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_ucd.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_valid_utf.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/pcre2lib/pcre2_xclass.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pcre/php_pcre.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pdo_sqlite/pdo_sqlite.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pdo_sqlite/sqlite_driver.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pdo_sqlite/sqlite_statement.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pdo/pdo_dbh.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pdo/pdo_sql_parser.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pdo/pdo_sqlstate.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pdo/pdo_stmt.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/pdo/pdo.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/phar/dirstream.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/phar/func_interceptors.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/phar/phar_object.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/phar/phar_path_check.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/phar/phar.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/phar/stream.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/phar/tar.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/phar/util.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/phar/zip.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/posix/posix.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/reflection/php_reflection.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/session/mod_files.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/session/mod_mm.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/session/mod_user_class.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/session/mod_user.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/session/session.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/simplexml/simplexml.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/spl/php_spl.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/spl/spl_array.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/spl/spl_directory.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/spl/spl_dllist.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/spl/spl_exceptions.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/spl/spl_fixedarray.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/spl/spl_functions.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/spl/spl_heap.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/spl/spl_iterators.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/spl/spl_observer.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/sqlite3/sqlite3.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/array.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/assert.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/base64.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/basic_functions.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/browscap.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/crc32_x86.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/crc32.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/credits.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/crypt_blowfish.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/crypt_freesec.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/crypt_sha256.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/crypt_sha512.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/crypt.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/css.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/datetime.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/dir.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/dl.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/dns.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/exec.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/file.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/filestat.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/filters.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/flock_compat.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/formatted_print.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/fsock.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/ftok.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/ftp_fopen_wrapper.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/head.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/hrtime.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/html.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/http_fopen_wrapper.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/http.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/image.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/incomplete_class.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/info.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/iptc.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/lcg.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/levenshtein.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/link.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/mail.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/math.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/md5.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/metaphone.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/microtime.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/mt_rand.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/net.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/pack.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/pageinfo.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/password.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/php_crypt_r.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/php_fopen_wrapper.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/proc_open.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/quot_print.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/rand.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/random.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/scanf.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/sha1.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/soundex.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/streamsfuncs.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/string.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/strnatcmp.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/syslog.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/type.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/uniqid.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/url_scanner_ex.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/url.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/user_filters.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/uuencode.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/var_unserializer.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/var.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/standard/versioning.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/tokenizer/tokenizer_data.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/tokenizer/tokenizer.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/xml/compat.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/xml/xml.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/xmlreader/php_xmlreader.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/ext/xmlwriter/php_xmlwriter.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/alloca.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/explicit_bzero.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/fastcgi.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/fopen_wrappers.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/getopt.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/internal_functions_cli.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/main.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/network.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/output.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/php_content_types.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/php_ini.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/php_open_temporary_file.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/php_scandir.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/php_syslog.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/php_ticks.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/php_variables.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/reentrancy.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/rfc1867.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/SAPI.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/snprintf.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/spprintf.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/streams/cast.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/streams/filter.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/streams/glob_wrapper.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/streams/memory.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/streams/mmap.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/streams/plain_wrapper.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/streams/streams.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/streams/transports.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/streams/userspace.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/streams/xp_socket.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/strlcat.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/main/strlcpy.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/cgi/cgi_main.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/cli/php_cli_process_title.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/cli/php_cli_server.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/cli/php_cli.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/cli/php_http_parser.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/cli/ps_title.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_bp.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_break.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_btree.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_cmd.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_frame.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_help.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_info.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_io.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_lexer.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_list.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_out.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_parser.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_print.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_prompt.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_set.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_sigsafe.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_utils.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_watch.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/sapi/phpdbg/phpdbg.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/TSRM/TSRM.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/block_pass.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/compact_literals.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/compact_vars.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/dce.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/dfa_pass.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/escape_analysis.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/nop_removal.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/optimize_func_calls.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/optimize_temp_vars_5.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/pass1.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/pass3.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/sccp.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/scdf.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/zend_call_graph.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/zend_cfg.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/zend_dfg.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/zend_dump.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/zend_func_info.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/zend_inference.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/zend_optimizer.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/Optimizer/zend_ssa.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_alloc.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_API.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_ast.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_attributes.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_builtin_functions.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_closures.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_compile.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_constants.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_cpuinfo.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_default_classes.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_dtrace.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_enum.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_exceptions.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_execute_API.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_execute.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_extensions.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_fibers.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_float.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_gc.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_gdb.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_generators.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_hash.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_highlight.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_inheritance.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_ini_parser.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_ini_scanner.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_ini.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_interfaces.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_iterators.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_language_parser.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_language_scanner.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_list.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_llist.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_multibyte.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_object_handlers.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_objects_API.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_objects.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_observer.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_opcode.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_operators.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_ptr_stack.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_signal.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_smart_str.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_sort.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_stack.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_stream.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_string.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_strtod.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_system_id.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_variables.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_virtual_cwd.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_vm_opcodes.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend_weakrefs.c
+LIBPHP_SRCS-y += $(LIBPHP_SRC)/Zend/zend.c
+
+################################################################################
+# Configure
+################################################################################
+$(LIBPHP_SRC)/main/php_config.h: $(LIBPHP_BUILD)/.origin
+	$(call verbose_cmd,CONFIG,libphp: $(notdir $@), \
+		cd $(LIBPHP_SRC) && ./buildconf --force && ./configure && \
+		rm -f $(LIBPHP_SRC)/main/php_config.h && cp $(LIBPHP_BASE)/include/php_config.h $(LIBPHP_SRC)/main && \
+		bison -Wall --defines -l $(LIBPHP_SRC)/ext/json/json_parser.y -o $(LIBPHP_SRC)/ext/json/json_parser.tab.c && \
+		re2c  -t $(LIBPHP_SRC)/ext/json/php_json_scanner_defs.h --no-generation-date -bci -o $(LIBPHP_SRC)/ext/json/json_scanner.c $(LIBPHP_SRC)/ext/json/json_scanner.re && \
+		re2c --no-generation-date -o $(LIBPHP_SRC)/ext/pdo/pdo_sql_parser.c $(LIBPHP_SRC)/ext/pdo/pdo_sql_parser.re && \
+		re2c --no-generation-date -b -o $(LIBPHP_SRC)/ext/phar/phar_path_check.c $(LIBPHP_SRC)/ext/phar/phar_path_check.re && \
+		re2c --no-generation-date -b -o $(LIBPHP_SRC)/ext/standard/url_scanner_ex.c $(LIBPHP_SRC)/ext/standard/url_scanner_ex.re && \
+		re2c --no-generation-date -b -o $(LIBPHP_SRC)/ext/standard/var_unserializer.c $(LIBPHP_SRC)/ext/standard/var_unserializer.re && \
+		re2c --no-generation-date --case-inverted -cbdFt $(LIBPHP_SRC)/Zend/zend_language_scanner_defs.h -o$(LIBPHP_SRC)/Zend/zend_language_scanner.c $(LIBPHP_SRC)/Zend/zend_language_scanner.l && \
+		re2c --no-generation-date --case-inverted -cbdFt $(LIBPHP_SRC)/Zend/zend_ini_scanner_defs.h -o$(LIBPHP_SRC)/Zend/zend_ini_scanner.c $(LIBPHP_SRC)/Zend/zend_ini_scanner.l && \
+		re2c --no-generation-date -cbdFo $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_lexer.c $(LIBPHP_SRC)/sapi/phpdbg/phpdbg_lexer.l \
+	)
+
+$(LIBPHP_BUILD)/.prepared: $(LIBPHP_SRC)/main/php_config.h
+UK_PREPARE += $(LIBPHP_BUILD)/.prepared

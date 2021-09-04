@@ -1,0 +1,10 @@
+menuconfig LIBPHP
+	bool "php Unikraft library"
+	default n
+
+if LIBPHP
+config LIBPHP_MAIN_FUNCTION
+	bool "Provide main function"
+	default n
+
+endif
